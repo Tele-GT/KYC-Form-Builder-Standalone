@@ -55,6 +55,9 @@ export default function UserForms() {
   const [selectedForm, setSelectedForm] = useState<FormData | null>(null);
   const [formDetailsOpen, setFormDetailsOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [sortBy, setSortBy] = useState<'createdAt' | 'title' | 'submissionCount'>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [formDetails, setFormDetails] = useState({
     apartmentName: '',
     apartmentAddress: '',
@@ -63,6 +66,25 @@ export default function UserForms() {
     submissionCap: undefined as number | undefined
   });
   const [shareMessage, setShareMessage] = useState('');
+
+  // Filter and sort forms
+  const filteredAndSortedForms = mockForms
+    .filter(form => 
+      form.title.toLowerCase().includes(searchText.toLowerCase()) ||
+      (form.apartmentName && form.apartmentName.toLowerCase().includes(searchText.toLowerCase())) ||
+      (form.apartmentAddress && form.apartmentAddress.toLowerCase().includes(searchText.toLowerCase()))
+    )
+    .sort((a, b) => {
+      const order = sortOrder === 'asc' ? 1 : -1;
+      switch (sortBy) {
+        case 'title':
+          return order * a.title.localeCompare(b.title);
+        case 'submissionCount':
+          return order * (a.submissionCount - b.submissionCount);
+        default:
+          return order * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      }
+    });
 
   const handleEditClick = (form: FormData) => {
     setSelectedForm(form);
@@ -153,8 +175,44 @@ export default function UserForms() {
           My Forms
         </Typography>
 
+        <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+          <TextField
+            fullWidth
+            placeholder="Search forms..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                background: 'rgba(19, 47, 76, 0.3)',
+                backdropFilter: 'blur(10px)',
+              }
+            }}
+          />
+          <FormControl sx={{ minWidth: 200 }}>
+            <Select
+              value={`${sortBy}-${sortOrder}`}
+              onChange={(e) => {
+                const [newSortBy, newSortOrder] = e.target.value.split('-');
+                setSortBy(newSortBy as typeof sortBy);
+                setSortOrder(newSortOrder as typeof sortOrder);
+              }}
+              sx={{
+                background: 'rgba(19, 47, 76, 0.3)',
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <MenuItem value="createdAt-desc">Newest First</MenuItem>
+              <MenuItem value="createdAt-asc">Oldest First</MenuItem>
+              <MenuItem value="title-asc">Title A-Z</MenuItem>
+              <MenuItem value="title-desc">Title Z-A</MenuItem>
+              <MenuItem value="submissionCount-desc">Most Submissions</MenuItem>
+              <MenuItem value="submissionCount-asc">Least Submissions</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+
         <Grid container spacing={3}>
-          {mockForms.map((form) => (
+          {filteredAndSortedForms.map((form) => (
             <Grid item xs={12} sm={6} md={4} key={form.id}>
               <Card
                 sx={{
