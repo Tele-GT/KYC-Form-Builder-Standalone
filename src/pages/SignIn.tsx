@@ -6,10 +6,9 @@ import {
   TextField,
   Typography,
   Paper,
-  Alert,
-  Link
+  Alert
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
 interface SignInProps {
   onSuccess?: () => void;
@@ -50,6 +49,9 @@ export default function SignIn({ onSuccess, redirectPath }: SignInProps) {
         onSuccess();
       } else if (redirectPath) {
         navigate(redirectPath);
+      } else {
+        // Navigate to forms list with signedIn state
+        navigate('/forms', { state: { signedIn: true } });
       }
     }
   };
@@ -143,18 +145,15 @@ export default function SignIn({ onSuccess, redirectPath }: SignInProps) {
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="body2" color="text.secondary">
                 Don't have an account?{' '}
-                <Link
-                  href="/signup"
-                  sx={{
-                    color: 'primary.light',
+                <RouterLink
+                  to="/signup"
+                  style={{
+                    color: '#9C27B0',
                     textDecoration: 'none',
-                    '&:hover': {
-                      textDecoration: 'underline',
-                    },
                   }}
                 >
                   Sign up here
-                </Link>
+                </RouterLink>
               </Typography>
             </Box>
           </form>

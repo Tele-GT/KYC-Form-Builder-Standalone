@@ -1,7 +1,7 @@
-import { Box, Button, Container, Grid, Typography, Modal, Card, CardContent } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, FileCopy as FileCopyIcon } from '@mui/icons-material';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Box, Button, Container, Grid, Typography, Modal, Card, CardContent, Paper, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Add as AddIcon, Edit as EditIcon, FileCopy as FileCopyIcon, CheckCircle as CheckCircleIcon, Update as UpdateIcon } from '@mui/icons-material';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import SignIn from './SignIn';
 
 const templateExamples = [
@@ -30,12 +30,39 @@ const templateExamples = [
 
 export default function Home() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedAction, setSelectedAction] = useState('');
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
+  useEffect(() => {
+    // Check if user came from successful sign in
+    if (location.state?.signedIn) {
+      setIsSignedIn(true);
+    }
+  }, [location]);
 
   const handleActionClick = (action: string) => {
-    setSelectedAction(action);
-    setPreviewOpen(true);
+    if (isSignedIn) {
+      // If signed in, navigate directly to the appropriate editor
+      switch(action) {
+        case 'use-existing':
+          navigate('/editor/template');
+          break;
+        case 'customize':
+          navigate('/editor/customize');
+          break;
+        case 'create-new':
+          navigate('/editor/new');
+          break;
+        default:
+          break;
+      }
+    } else {
+      // If not signed in, show sign in modal
+      setSelectedAction(action);
+      setPreviewOpen(true);
+    }
   };
 
   const handleClosePreview = () => {
@@ -67,7 +94,7 @@ export default function Home() {
           variant="contained"
           size="large"
           startIcon={<AddIcon />}
-          onClick={() => navigate('/signup')}
+          onClick={() => isSignedIn ? navigate('/editor/new') : navigate('/signup')}
           sx={{ 
             mt: 2,
             px: 4,
@@ -98,139 +125,226 @@ export default function Home() {
         </Button>
       </Box>
 
-      <Box sx={{ mt: 8, mb: 4 }}>
-        <Typography 
-          variant="h4" 
-          component="h2" 
-          gutterBottom
-          sx={{
-            textAlign: 'center',
-            background: 'linear-gradient(45deg, #9C27B0 30%, #00BFA5 90%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            fontWeight: 'bold',
-            mb: 4
-          }}
-        >
-          Template Gallery
-        </Typography>
-        <Grid container spacing={3}>
-          {[
-            { id: 'basic', title: 'Basic KYC Form', gif: '/gifs/basic-kyc.gif' },
-            { id: 'corporate', title: 'Corporate KYC', gif: '/gifs/corporate-kyc.gif' },
-            { id: 'enhanced', title: 'Enhanced Due Diligence', gif: '/gifs/enhanced-kyc.gif' },
-            { id: 'property', title: 'Property Manager KYC', gif: '/gifs/property-kyc.gif' },
-            { id: 'investor', title: 'Investor Verification', gif: '/gifs/investor-kyc.gif' },
-            { id: 'international', title: 'International KYC', gif: '/gifs/international-kyc.gif' }
-          ].map((template) => (
-            <Grid item key={template.id} xs={12} sm={6} md={4}>
-              <Box
-                sx={{
-                  position: 'relative',
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                  backgroundColor: 'background.paper',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  cursor: 'pointer',
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: (theme) => `
-                      0 16px 32px ${theme.palette.primary.dark}40,
-                      0 0 60px ${theme.palette.primary.main}20
-                    `,
-                    '& .template-title': {
-                      opacity: 1,
-                      transform: 'translateY(0)'
-                    },
-                    '& .template-actions': {
-                      opacity: 1,
-                      transform: 'translateY(0)'
-                    }
-                  }
-                }}
-              >
-                <Box
-                  component="img"
-                  src={template.gif}
-                  alt={template.title}
-                  sx={{
-                    width: '100%',
-                    height: 'auto',
-                    aspectRatio: '16/9',
-                    display: 'block',
-                    objectFit: 'cover'
-                  }}
-                />
-                <Box
-                  className="template-title"
-                  sx={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    padding: 2,
-                    background: 'linear-gradient(to top, rgba(19, 47, 76, 0.95), rgba(19, 47, 76, 0.5))',
-                    opacity: 0.8,
-                    transform: 'translateY(10px)',
-                    transition: 'all 0.3s ease-in-out'
-                  }}
-                >
-                  <Typography variant="h6" sx={{ color: 'common.white', fontWeight: 500 }}>
-                    {template.title}
-                  </Typography>
-                  <Box
-                    className="template-actions"
+      <Box sx={{ mt: 8, mb: 6 }}>
+        <Grid container spacing={4} sx={{ mb: 6 }}>
+          <Grid item xs={12} md={4}>
+            <Card
+              sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                cursor: 'pointer',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: (theme) => `0 6px 20px ${theme.palette.primary.main}40`
+                }
+              }}
+              onClick={() => handleActionClick('use-existing')}
+            >
+              <CardContent sx={{ flexGrow: 1, textAlign: 'center', p: 4 }}>
+                <FileCopyIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
+                <Typography variant="h5" gutterBottom>
+                  Use Existing Template
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Choose from our collection of pre-built KYC form templates
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Card
+              sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                cursor: 'pointer',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: (theme) => `0 6px 20px ${theme.palette.primary.main}40`
+                }
+              }}
+              onClick={() => handleActionClick('customize')}
+            >
+              <CardContent sx={{ flexGrow: 1, textAlign: 'center', p: 4 }}>
+                <EditIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
+                <Typography variant="h5" gutterBottom>
+                  Customize Template
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Modify existing templates to match your specific requirements
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Card
+              sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                cursor: 'pointer',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: (theme) => `0 6px 20px ${theme.palette.primary.main}40`
+                }
+              }}
+              onClick={() => handleActionClick('create-new')}
+            >
+              <CardContent sx={{ flexGrow: 1, textAlign: 'center', p: 4 }}>
+                <AddIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
+                <Typography variant="h5" gutterBottom>
+                  Create New Form
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Build a custom KYC form from scratch with our form builder
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={8}>
+            <Typography 
+              variant="h4" 
+              component="h2" 
+              gutterBottom
+              sx={{
+                textAlign: 'center',
+                background: 'linear-gradient(45deg, #9C27B0 30%, #00BFA5 90%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                fontWeight: 'bold',
+                mb: 4
+              }}
+            >
+              Template Gallery
+            </Typography>
+            <Grid container spacing={3}>
+              {[
+                { id: 'basic', title: 'Basic KYC Form', gif: '/gifs/basic-kyc.gif' },
+                { id: 'corporate', title: 'Corporate KYC', gif: '/gifs/corporate-kyc.gif' },
+                { id: 'enhanced', title: 'Enhanced Due Diligence', gif: '/gifs/enhanced-kyc.gif' },
+                { id: 'property', title: 'Property Manager KYC', gif: '/gifs/property-kyc.gif' }
+              ].map((template) => (
+                <Grid item xs={12} sm={6} key={template.id}>
+                  <Card
                     sx={{
+                      height: '100%',
                       display: 'flex',
-                      gap: 1,
-                      mt: 2,
-                      opacity: 0,
-                      transform: 'translateY(10px)',
-                      transition: 'all 0.3s ease-in-out'
+                      flexDirection: 'column',
+                      background: 'rgba(19, 47, 76, 0.5)',
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: 2,
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: (theme) => `0 6px 20px ${theme.palette.primary.main}40`
+                      }
                     }}
                   >
-                    <Button
-                      variant="contained"
-                      size="small"
-                      startIcon={<FileCopyIcon />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleActionClick('use-existing');
-                      }}
-                      sx={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                        backdropFilter: 'blur(4px)',
-                        '&:hover': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.2)'
-                        }
-                      }}
-                    >
-                      Use Template
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={<EditIcon />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleActionClick('customize');
-                      }}
-                      sx={{
-                        borderColor: 'rgba(255, 255, 255, 0.3)',
-                        color: 'common.white',
-                        '&:hover': {
-                          borderColor: 'rgba(255, 255, 255, 0.5)',
-                          backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                        }
-                      }}
-                    >
-                      Customize
-                    </Button>
-                  </Box>
-                </Box>
-              </Box>
+                    <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
+                      <Typography variant="h6" gutterBottom>
+                        {template.title}
+                      </Typography>
+                      <Box
+                        component="img"
+                        src={template.gif}
+                        alt={template.title}
+                        sx={{
+                          width: '100%',
+                          height: 'auto',
+                          borderRadius: 1,
+                          mb: 2
+                        }}
+                      />
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
             </Grid>
-          ))}
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Paper
+              sx={{
+                p: 3,
+                background: 'rgba(19, 47, 76, 0.5)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: 2,
+                mb: 4
+              }}
+            >
+              <Typography
+                variant="h5"
+                gutterBottom
+                sx={{
+                  background: 'linear-gradient(45deg, #9C27B0 30%, #00BFA5 90%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontWeight: 'bold',
+                  mb: 3
+                }}
+              >
+                Why This KYC Solution Stands Out
+              </Typography>
+              <List>
+                {[
+                  'Quick and simple for tenants to complete.',
+                  'Cost-effective for agents and landlords',
+                  'Saves prospects time by auto-filling info from past submissions.',
+                  'Smooth reporting for landlords with multiple submissions exported into one clear, readable format',
+                  'Stores KYC records for future legal use.'
+                ].map((benefit, index) => (
+                  <ListItem key={index} sx={{ py: 1 }}>
+                    <ListItemIcon>
+                      <CheckCircleIcon sx={{ color: '#00BFA5' }} />
+                    </ListItemIcon>
+                    <ListItemText primary={benefit} />
+                  </ListItem>
+                ))}
+              </List>
+            </Paper>
+            
+            <Paper
+              sx={{
+                p: 3,
+                background: 'rgba(19, 47, 76, 0.5)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: 2
+              }}
+            >
+              <Typography
+                variant="h5"
+                gutterBottom
+                sx={{
+                  background: 'linear-gradient(45deg, #9C27B0 30%, #00BFA5 90%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontWeight: 'bold',
+                  mb: 3
+                }}
+              >
+                Coming Soon
+              </Typography>
+              <List>
+                {[
+                  'Identifying reliable prospects with easy verification.',
+                  'Ranking prospects based on income-to-rent ratio, work email, and guarantor details.'
+                ].map((feature, index) => (
+                  <ListItem key={index} sx={{ py: 1 }}>
+                    <ListItemIcon>
+                      <UpdateIcon sx={{ color: '#9C27B0' }} />
+                    </ListItemIcon>
+                    <ListItemText primary={feature} />
+                  </ListItem>
+                ))}
+              </List>
+            </Paper>
+          </Grid>
         </Grid>
       </Box>
       <Grid container spacing={4} sx={{ position: 'relative', py: 2 }}>

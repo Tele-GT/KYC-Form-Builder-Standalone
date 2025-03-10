@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
-import { AppBar, Box, Container, CssBaseline, ThemeProvider, Toolbar, Typography, createTheme } from '@mui/material';
+import { AppBar, Box, Container, CssBaseline, ThemeProvider, Toolbar, Typography, Button, createTheme } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 
 const theme = createTheme({
   palette: {
@@ -59,10 +60,37 @@ export default function Layout({ children }: LayoutProps) {
         <AppBar position="static">
           <Toolbar>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <img src="/vite.svg" alt="logo" style={{ width: 32, height: 32, marginRight: 16 }} />
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                KYC Form Builder
-              </Typography>
+              <Box
+                component={RouterLink}
+                to="/"
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  '&:hover': {
+                    opacity: 0.8
+                  }
+                }}
+              >
+                <img src="/vite.svg" alt="logo" style={{ width: 32, height: 32, marginRight: 16 }} />
+                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                  KYC Form Builder
+                </Typography>
+              </Box>
+              <Button
+                component={RouterLink}
+                to="/forms"
+                sx={{
+                  color: 'white',
+                  mx: 2,
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                  }
+                }}
+              >
+                Forms
+              </Button>
             </Box>
             <Box sx={{ 
               backgroundColor: 'rgba(255, 255, 255, 0.1)', 
@@ -76,7 +104,7 @@ export default function Layout({ children }: LayoutProps) {
                 345
               </Typography>
               <Typography variant="body2" color="rgba(255, 255, 255, 0.7)">
-                KYC Submissions made today
+                KYC Submissions
               </Typography>
             </Box>
           </Toolbar>
